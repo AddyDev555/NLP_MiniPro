@@ -37,12 +37,12 @@ body{
 
 .form label{
     cursor: pointer;
-    padding: 10px 30px;
+    padding: 10px 55px;
     border-radius: 5px;
     background-color: #FFD700;
     color: #0f3460;
     font-family: "Rubik", serif;
-    font-size: 1.3rem;
+    font-size: 1rem;
     font-weight: bold;
 }
 
