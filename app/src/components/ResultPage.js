@@ -36,7 +36,7 @@ export default function ResultPage() {
                 const imagePart = await fileToGenerativePart(image);
 
                 // Initialize GoogleGenerativeAI with your API key
-                const genAI = new GoogleGenerativeAI("AIzaSyAqCDh7MQaIWBZeW0pnMxSIK8X4NvMRRT4");
+                const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
                 // Define the prompt for AI content
