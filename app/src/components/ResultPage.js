@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import "./css/Result.css";
 
-// Helper function to convert file to the required format
 async function fileToGenerativePart(file) {
     const base64EncodedDataPromise = new Promise((resolve) => {
         const reader = new FileReader();
@@ -37,7 +36,7 @@ export default function ResultPage() {
 
                 // Initialize GoogleGenerativeAI with your API key
                 const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
                 // Define the prompt for AI content
                 const prompt = "Extract only the Text from the provided Image file";
