@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Load the trained model
-model = load_model("essay_scoring_model2.h5")
+model = load_model("essay_scoring_model_bilstm.h5")
 
 # Load the tokenizer
 with open('tokenizer.pickle', 'rb') as handle:
