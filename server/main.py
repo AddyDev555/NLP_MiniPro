@@ -1,210 +1,36 @@
-import sys
-import torch
-from typing import List
-from sentence_transformers import SentenceTransformer, util
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import numpy as np
+import pickle
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-###############################################################################
-# Configuration
-###############################################################################
+# Load the trained model
+model = load_model("essay_scoring_model2.h5")
 
-# Sentence-BERT model for similarity
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+# Load the tokenizer
+with open('tokenizer.pickle', 'rb') as handle:
+    tokenizer = pickle.load(handle)
 
-# RoBERTa MNLI model for contradiction detection
-# (Remember label mapping for roberta-large-mnli -> 0=CONTRADICTION,1=NEUTRAL,2=ENTAILMENT)
-NLI_MODEL_NAME = "roberta-large-mnli"
+# Define max sequence length (same as used during training)
+MAX_SEQUENCE_LENGTH = 300  # Modify if needed
 
-# Word count thresholds
-MIN_WORD_COUNT = 50
-MAX_WORD_COUNT = 400
+# Function to preprocess input text
+def preprocess_text(text):
+    sequences = tokenizer.texts_to_sequences([text])
+    padded_sequence = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH, padding='post', truncating='post')
+    return padded_sequence
 
-###############################################################################
-# Load Models
-###############################################################################
+# Function to make a prediction
+def predict_score(text):
+    processed_text = preprocess_text(text)
+    prediction = model.predict(processed_text)
+    
+    # Round to nearest integer for score prediction
+    predicted_score = np.round(prediction).flatten()[0]
+    return predicted_score
 
-print("Python version:", sys.version)
-print("Torch version:", torch._version_)
+# Take input from user
+input_text='it was one of those days where i just sat around all day doing nothing but play  text and laugh at myself it was one of those days where no one bothered me no one even really talked to me no one told me to do chores by dinner time someone decided to call me up stairs to eat but let me tell you it was not anything like pizza although id rather eat it than get a lecture on not being thankful my brother came home for the first time in ever ate with us then decided to leave again but this time i asked to come with im so tired of beating  he said no of coarse i made my daddy change his mind for him of coarse i do not see why he would not let me come in the first place he was going to hang out with the guys i grew up with my friends not his anyways i got ready then we hit the road there him and i were laughing about dinner and what kind of music my mom listens to on our way to pick up my friends these guys are great all we do is crack jokes about each other and crack up but let us get down to business i did not tell you this but it is time around the of  fireworks are for sale and we are creating bombs out of them or they are since im a girl i guess im not allowed or something lame like that but there is this girl my brother likes and i guess he wants to impress excuse me impress her by showing up at her house so she can see these master pieces they have made that just makes me feel bad for him but honestly just made me laugh maybe she will be impressed key word maybe although no it will not because to this day they are still only friends so about these bombs complete duds we tried well i just watched over and over again to make em work but they would not do a thing eventually my friend put a whole bunch of s into my favorite stuffed animal it just made a bunch of sparkly colors and loud noises but it was pretty fun to watch we got in on video too it was a total good laugh for everyone after my brother said goodbye to his girl we decided to head home the thing is we had so many fireworks left we know this kid who lives somewhere on the way home so we decided to go by his house have get out of the truck light the firework on his porch have him jump in the tail of the trunk then drive off as fast as we could the first time we did it we could not stop laughing they did not come out of their house so we did it again they still did not come out we did it about one more time by then all the neighbors were out they were all so confused that just made us laugh even more it was so great we wanted to keep doing it but to someone else this time we know this girl who lives near all of us we thought why not it is not gonna hurt to stop there real quick and have some fun with her too apparently she thought different way different actually she thought it was the rudest thing ever we were just joking around gettin a laugh out of all our fun we were not being rude she is our friend long story short her mom got mad too and chased us down in her car she never caught us but she got our license plate number the next day on the of  she called the police they did not think it was a big deal but they still showed up at my house and talked to my parents about what went down i was at my boyfriends so lucky me i only had to talk to my mom on the phone about it she realized we were just having fun and actually laughed about it too that of was great it was one of those nights where you laughed the whole time and would not change a thing even if you got in trouble with the law for it something i will definitely never do again but im so glad i have this hilarious memory to reminisce on for the rest of my life'
 
-print(f"\nLoading Sentence-BERT embedding model: {EMBEDDING_MODEL_NAME}")
-embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-
-print(f"Loading NLI model for contradiction detection: {NLI_MODEL_NAME}\n")
-nli_tokenizer = AutoTokenizer.from_pretrained(NLI_MODEL_NAME)
-nli_model = AutoModelForSequenceClassification.from_pretrained(NLI_MODEL_NAME)
-
-###############################################################################
-# Core Functions
-###############################################################################
-
-def compute_similarity(text_a: str, text_b: str) -> float:
-    """
-    Compute semantic similarity between two strings using Sentence-BERT embeddings.
-    Returns a float in [0.0, 1.0].
-    """
-    emb_a = embedding_model.encode(text_a, convert_to_tensor=True)
-    emb_b = embedding_model.encode(text_b, convert_to_tensor=True)
-    sim = util.cos_sim(emb_a, emb_b).item()  # Cosine similarity
-    return sim
-
-def compute_contradiction_prob(premise: str, hypothesis: str) -> float:
-    """
-    Use RoBERTa MNLI to get the probability that 'hypothesis' CONTRADICTS 'premise'.
-    roberta-large-mnli label mapping:
-        0 -> CONTRADICTION
-        1 -> NEUTRAL
-        2 -> ENTAILMENT
-    Returns a float in [0.0, 1.0].
-    """
-    inputs = nli_tokenizer.encode_plus(
-        premise, hypothesis,
-        return_tensors='pt',
-        truncation=True
-    )
-    with torch.no_grad():
-        logits = nli_model(**inputs).logits
-    
-    probs = torch.softmax(logits, dim=1)[0]  # shape: [3]
-    contradiction_prob = probs[0].item()  # index 0 is CONTRADICTION
-    return contradiction_prob
-
-def score_reference_point(reference_point: str, student_text: str) -> float:
-    """
-    Combines similarity and contradiction detection to yield a final score
-    for a single reference point vs. the student's entire answer.
-    
-    Formula: final = similarity * (1 - contradiction_prob).
-    We also check contradiction in both directions and take the max contradiction
-    probability to be safe.
-    """
-    sim = compute_similarity(reference_point, student_text)
-    
-    contr_prob_1 = compute_contradiction_prob(reference_point, student_text)
-    contr_prob_2 = compute_contradiction_prob(student_text, reference_point)
-    contr_prob = max(contr_prob_1, contr_prob_2)
-    
-    final_score = sim * (1 - contr_prob)
-    return final_score
-
-def score_word_count(student_text: str, min_count=MIN_WORD_COUNT, max_count=MAX_WORD_COUNT) -> float:
-    """
-    Evaluate the student's word count. If it's within the ideal range, return 1.0.
-    If it's below or above, penalize accordingly. This is a simple approach—adjust as needed.
-    """
-    words = student_text.split()
-    wc = len(words)
-    
-    if wc < min_count:
-        # scale from 0 to 1 as wc goes from 0 to min_count
-        return wc / float(min_count)
-    elif wc > max_count:
-        # If > max_count, linearly penalize until 2*max_count => 0
-        if wc >= 2 * max_count:
-            return 0.0
-        else:
-            return 1.0 - (wc - max_count) / float(max_count)
-    else:
-        return 1.0
-
-def evaluate_answer(
-    question: str,
-    reference_points: List[str],
-    student_answer: str,
-    word_count_weight=0.2,
-    points_weight=0.8
-) -> float:
-    """
-    Evaluate a long paragraph-based student answer against:
-      - a list of reference bullet points
-      - word count constraints
-      - contradiction detection + similarity
-    
-    Returns a final score in [0, 1].
-    """
-    # Word count score
-    wc_score = score_word_count(student_answer)
-    
-    # Evaluate each reference bullet point
-    point_scores = []
-    for rp in reference_points:
-        rp_score = score_reference_point(rp, student_answer)
-        point_scores.append(rp_score)
-    
-    avg_points_score = sum(point_scores) / len(point_scores) if point_scores else 0.0
-    
-    # Combine using weighting
-    final_score = (word_count_weight * wc_score) + (points_weight * avg_points_score)
-    return final_score
-
-###############################################################################
-# Main / Examples
-###############################################################################
-if __name__ == "__main__":
-    # Common question + reference points
-    question = "Explain the importance of resource planning in India."
-    reference_points = [
-        "Definition of resource planning",
-        "Why resources are unevenly distributed in India",
-        "How planning ensures sustainability and prevents overuse"
-    ]
-    
-    # 1) GOOD EXAMPLE - covers all points, appropriate length, no contradiction
-    good_example = {
-        "question": question,
-        "reference_points": reference_points,
-        "student_answer": (
-            "Resource planning refers to a systematic strategy for using resources "
-            "in a balanced way. In India, resources are not evenly spread—some regions "
-            "have abundant minerals while others lack them. By planning, we ensure that "
-            "we do not exploit resources too quickly. This helps preserve them for future "
-            "generations, prevents ecological damage, and maintains sustainability. "
-            "Moreover, resource planning tackles unequal distribution by allocating resources "
-            "where they're needed most."
-        )
-    }
-    
-    # 2) BAD EXAMPLE - short, missing or contradicting points, poor coverage
-    bad_example = {
-        "question": question,
-        "reference_points": reference_points,
-        "student_answer": (
-            "Resource planning is not necessary because resources are found everywhere in India, "
-            "so there's no need to worry about running out. Also, it's too complicated "
-            "to plan resources for the future."
-        )
-    }
-    
-    # Evaluate Good Example
-    good_score = evaluate_answer(
-        good_example["question"],
-        good_example["reference_points"],
-        good_example["student_answer"],
-        word_count_weight=0.2,
-        points_weight=0.8
-    )
-    
-    # Evaluate Bad Example
-    bad_score = evaluate_answer(
-        bad_example["question"],
-        bad_example["reference_points"],
-        bad_example["student_answer"],
-        word_count_weight=0.2,
-        points_weight=0.8
-    )
-    
-    # Print Results
-    print("=======================================")
-    print("           GOOD EXAMPLE")
-    print("=======================================")
-    print(f"Question: {good_example['question']}")
-    print("Reference Points:", reference_points)
-    print(f"Student Answer:\n{good_example['student_answer']}\n")
-    print(f"Final Score (0 to 1): {good_score:.4f}")
-    
-    print("\n=======================================")
-    print("           BAD EXAMPLE")
-    print("=======================================")
-    print(f"Question: {bad_example['question']}")
-    print("Reference Points:", reference_points)
-    print(f"Student Answer:\n{bad_example['student_answer']}\n")
-    print(f"Final Score (0 to 1): {bad_score:.4f}")
+# Predict and display the score
+predicted_score = predict_score(input_text)
+print(f"Predicted Score: {predicted_score}")
