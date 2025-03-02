@@ -1,3 +1,6 @@
+@import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
+
+
 .title{
     width: 70%;
     margin: auto;
@@ -6,10 +9,15 @@
     align-content: center;
     margin-top: 20px;
     margin-bottom: 10px;
+    margin-top: 40px;
+}
+
+.title h1{
+    font-size: 1.2rem;
 }
 
 .title img{
-    width: 5%;
+    width: 4%;
     margin-right: 15px;
 }
 
@@ -19,6 +27,7 @@
     margin: auto;
     border: 3px dashed #0f3460;
     border-radius: 5px;
+    font-size: 1rem;
     padding: 20px;
     text-align: justify;
     overflow-y: scroll;
@@ -98,4 +107,51 @@
     100% {
         transform: rotate(25deg)
     }
+}
+
+.scoreCon{
+    width: 70%;
+    margin: auto;
+}
+
+.scoreTitle{
+    display: flex;
+    align-items: center;
+    align-content: center;
+    margin-top: 10px;
+}
+
+.scoreTitle img{
+    width: 4%;
+    margin-right: 15px;
+    position: relative;
+    top: 8px;
+}
+
+.scoreTitle h1{
+    margin-bottom: 0;
+    font-size: 1.2rem;
+}
+
+.scoreCon p{
+    font-size: 1.1rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.emoji{
+    color: gold;
+    font-size: 1.2rem;
+    position: relative;
+    top: 3px;
+}
+
+.suggestion h1{
+    font-size: 1.2rem;
+    margin-top: 0;
+}
+
+.suggestionCon{
+    height: 20vh;
+    overflow-y: scroll;
 }

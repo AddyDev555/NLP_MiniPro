@@ -17,9 +17,12 @@ async function fileToGenerativePart(file) {
 
 export default function ResultPage() {
     const location = useLocation();
-    const { image } = location.state || {};
+    const { image, type } = location.state || {};
     const [ansText, setAnsText] = useState("");
     const [loading, setLoading] = useState(false);
+    const [score, setScore] = useState(null);
+    const [suggestion, setSuggestion] = useState(null);
+    const [emojiClass, setEmojiClass] = useState("fi-rr-neutral");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,49 +34,90 @@ export default function ResultPage() {
             setLoading(true);
 
             try {
-                // Convert image to GenerativeAI format
                 const imagePart = await fileToGenerativePart(image);
-
-                // Initialize GoogleGenerativeAI with your API key
                 const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
                 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-                // Define the prompt for AI content
-                const prompt = "Extract only the Text from the provided Image file";
-
-                // Request AI response
+                const prompt = "Extract only the text from the provided image file.";
                 const result = await model.generateContent({
-                    contents: [
-                        { parts: [{ text: prompt }, imagePart] }
-                    ]
+                    contents: [{ parts: [{ text: prompt }, imagePart] }]
                 });
 
-                setAnsText(result.response.text());
+                const extractedText = result.response.text();
+                setAnsText(extractedText);
             } catch (err) {
-                console.error("Error fetching AI content:", err.message);
+                console.error("Error extracting text:", err.message);
                 setAnsText("Error: " + err.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        if (image) {
-            fetchData();
-        }
+        if (image) fetchData();
     }, [image]);
+
+    useEffect(() => {
+        if (!ansText || ansText.startsWith("Error")) return;
+
+        const fetchScore = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ansText),
+                });
+
+                const data = await response.json();
+                setScore(data.essayScore);
+                setEmojiClass(data.essayScore > 5.0 ? "fi-rr-smile-beam" : "fi-rr-sad");
+            } catch (error) {
+                console.error('Error fetching score:', error);
+            }
+        };
+
+        const provideSuggestion = async () => {
+            try {
+                const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
+                const prompt = `provide a very short suggestion on the provided ${type} on basis of grammar and other aspects.`;
+                const result = await model.generateContent({
+                    contents: [{ parts: [{ text: prompt }, { text: ansText }] }]
+                });
+
+                setSuggestion(result.response.text());
+            } catch (err) {
+                console.error("Error classifying text:", err.message);
+            }
+        };
+
+        provideSuggestion();
+        fetchScore();
+    }, [ansText, type]);
 
     return (
         <main>
-            {loading ? <div class="loader"></div> :
-            <div className="textTract">
-                <div className="title">
-                    <img src="./text.png" alt="textLogo" />
-                    <h1>Extracted Text from Answer-Sheet</h1>
+            {loading ? <div className="loader"></div> :
+                <div className="textTract">
+                    <div className="title">
+                        <img src="./text.png" alt="textLogo" />
+                        <h1>Extracted Text from Answer-Sheet</h1>
+                    </div>
+                    <div className="extractedText">
+                        {ansText}
+                    </div>
+                    <div className="scoreCon">
+                        <div className="scoreTitle">
+                            <img src="./score.png" alt="score_img" />
+                            <h1>Final Score for {type} (0-10)</h1>
+                        </div>
+                        <div className="suggestion">
+                            <p>{type} Score: {score} <i className={`fi ${emojiClass} emoji`}></i></p>
+                            <h1>Suggestions on your {type}</h1>
+                            <p className="suggestionCon">{suggestion}</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="extractedText">
-                    {ansText}
-                </div>
-            </div>
             }
         </main>
     );
