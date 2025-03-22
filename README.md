@@ -65,21 +65,25 @@ AutoGrade is an NLP-powered tool designed to classify student essays or assignme
 ## 🛠️ Usage
 1. **Preprocess Essays**:
    ```python
-   from utils import preprocess_essay
-   essay = "Student's essay text here..."
-   processed_essay = preprocess_essay(essay)
+   def preprocess_text(text):
+       sequences = tokenizer.texts_to_sequences([text])
+       padded_sequence = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH, padding='post', truncating='post')
+       return padded_sequence
    ```
 
-2. **Evaluate with BERT**:
+2. **Evaluate with BiLSTM Model**:
    ```python
-   from models import BertGrader
-   grader = BertGrader()
-   scores = grader.evaluate(processed_essay)
+   model = load_model("essay_scoring_model_bilstm.h5")
+   def predict_score(text):
+       processed_text = preprocess_text(text)
+       prediction = model.predict(processed_text)
+       predicted_score = np.round(prediction).flatten()[0]
+       return predicted_score
    ```
 
-3. **Generate Feedback Report**:
+3. **Generate Feedback and Suggestion Report**:
    ```python
-   grader.generate_report(scores, output_path="feedback.pdf")
+   grader.generate_report(score, suggestion=setSuggestion())
    ```
 
 ## 📈 Results & Insights
