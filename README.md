@@ -93,9 +93,6 @@ We welcome contributions! Please:
 2. Open an issue to discuss proposed changes.
 3. Submit a pull request with tests.
 
-## 📜 License
-This project is licensed under the MIT License. See LICENSE.
-
 ## 🙏 Acknowledgments
 * Hugging Face for `BERT` and `DeBERTa` implementations.
 * Kaggle community for essay datasets.
