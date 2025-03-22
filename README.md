@@ -1,4 +1,4 @@
-# 📚 AutoGrade : Automated Essay Classification for Educators 🤖
+# 📚 AutoGrade: Automated Essay Classification for Educators 🤖
 
 ![Banner](https://placehold.co/1200x400/4B86B4/FFFFFF?text=AutoGrade%20-%20Automated%20Essay%20Grading%20with%20AI)
 
@@ -10,7 +10,7 @@ AutoGrade is an NLP-powered tool designed to classify student essays or assignme
 - **Automated Essay Classification**: Leverage ML/DL models to categorize essays efficiently.
 - **Multi-Dimensional Evaluation**: Assess essays across rubrics like content, grammar, and relevance.
 - **Model Comparisons**: Choose from 20+ models (traditional ML, deep learning, and transformers).
-- **Open-Source & Customizable**: Adapt the pipeline to your institution’s unique rubrics.
+- **Open-Source & Customizable**: Adapt the pipeline to your institution's unique rubrics.
 - **Explainable Results**: Generate feedback reports for students and educators.
 
 ---
@@ -48,5 +48,55 @@ AutoGrade is an NLP-powered tool designed to classify student essays or assignme
 ## ⚙️ Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/edugrader.git
-   cd edugrader
+   git clone https://github.com/AddyDev555/NLP_MiniPro.git
+   cd NLP_MiniPro
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Download pretrained models (optional):
+   ```bash
+   python download_models.py
+   ```
+
+## 🛠️ Usage
+1. **Preprocess Essays**:
+   ```python
+   from utils import preprocess_essay
+   essay = "Student's essay text here..."
+   processed_essay = preprocess_essay(essay)
+   ```
+
+2. **Evaluate with BERT**:
+   ```python
+   from models import BertGrader
+   grader = BertGrader()
+   scores = grader.evaluate(processed_essay)
+   ```
+
+3. **Generate Feedback Report**:
+   ```python
+   grader.generate_report(scores, output_path="feedback.pdf")
+   ```
+
+## 📈 Results & Insights
+* **BERT dominates** with near-perfect QWK (0.9935), suggesting exceptional agreement with human graders.
+* **BiLSTM + Word2Vec** outperforms other DL models (R²=0.77).
+* **TF-IDF + LightGBM** is the best non-transformer option (QWK=0.8451).
+
+## 🤝 Contributing
+We welcome contributions! Please:
+1. Fork the repository.
+2. Open an issue to discuss proposed changes.
+3. Submit a pull request with tests.
+
+## 📜 License
+This project is licensed under the MIT License. See LICENSE.
+
+## 🙏 Acknowledgments
+* Hugging Face for `BERT` and `DeBERTa` implementations.
+* Kaggle community for essay datasets.
+* Educators worldwide for inspiring this tool!
