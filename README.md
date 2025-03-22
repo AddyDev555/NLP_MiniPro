@@ -1,6 +1,6 @@
 # 📚 AutoGrade: Automated Essay Classification for Educators 🤖
 
-![Banner](https://placehold.co/1200x400/4B86B4/FFFFFF?text=AutoGrade%20-%20Automated%20Essay%20Grading%20with%20AI)
+![Banner](./app/public/pic.jpg)
 
 AutoGrade is an NLP-powered tool designed to classify student essays or assignments into categories based on grading rubrics (e.g., content quality, grammar, relevance). By automating repetitive tasks, it **reduces educators' workload**, **provides faster feedback to students**, and **enhances the grading process** through explainable AI-driven insights.
 
