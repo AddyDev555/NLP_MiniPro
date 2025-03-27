@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -21,7 +22,7 @@ export default function ResultPage() {
     const [ansText, setAnsText] = useState("");
     const [loading, setLoading] = useState(false);
     const [score, setScore] = useState(null);
-    const [suggestion, setSuggestion] = useState(null);
+    const [suggestion, setSuggestion] = useState([]);
     const [emojiClass, setEmojiClass] = useState("fi-rr-neutral");
 
     useEffect(() => {
@@ -77,17 +78,42 @@ export default function ResultPage() {
 
         const provideSuggestion = async () => {
             try {
-                const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+                const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY)
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
 
-                const prompt = `provide a very short suggestion on the provided ${type} on basis of grammar and other aspects.`;
+                const prompt = `Analyze the following ${type} and provide 3-5 specific improvement suggestions.
+                    For each suggestion:
+                1. Focus on a specific aspect (Grammar, Structure, Vocabulary, etc.)
+                2. Be concise but specific
+                3. Format your response as a numbered list with each point on a new line
+                4. Start each point with "**Category:** " (e.g., "**Grammar:** Fix subject-verb agreement") Here the category is grammar`
+
                 const result = await model.generateContent({
-                    contents: [{ parts: [{ text: prompt }, { text: ansText }] }]
-                });
+                    contents: [{ parts: [{ text: prompt }, { text: ansText }] }],
+                })
 
-                setSuggestion(result.response.text());
+                const responseText = result.response.text()
+
+                const suggestionsList = responseText
+                    .split(/\d+\.\s+/) 
+                    .filter((item) => item.trim().length > 0) 
+                    .map((item) => {
+                        const match = item.match(/\*\*(.*?):\*\*(.*)/)
+                        if (match) {
+                            return {
+                                category: match[1].trim(),
+                                content: match[2].trim(),
+                            }
+                        }
+                        return {
+                            category: "Improvement",
+                            content: item.trim(),
+                        }
+                    })
+
+                setSuggestion(suggestionsList)
             } catch (err) {
-                console.error("Error classifying text:", err.message);
+                console.error("Error getting suggestions:", err.message)
             }
         };
 
@@ -113,8 +139,20 @@ export default function ResultPage() {
                         </div>
                         <div className="suggestion">
                             <p>{type} Score: {score} <i className={`fi ${emojiClass} emoji`}></i></p>
-                            <h1>Suggestions on your {type}</h1>
-                            <p className="suggestionCon">{suggestion}</p>
+                <h1>Suggestions on your {type}</h1>
+
+                {suggestion.length > 0 ? (
+                    <ul className="suggestions-list">
+                    {suggestion.map((item, index) => (
+                        <li key={index} className="suggestion-item">
+                        <span className="suggestion-category">{item.category}</span>
+                        <span className="suggestion-content">{item.content}</span>
+                        </li>
+                    ))}
+                    </ul>
+                ) : (
+                    <p className="suggestionCon">Loading suggestions...</p>
+                )}
                         </div>
                     </div>
                 </div>
