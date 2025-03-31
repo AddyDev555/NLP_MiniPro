@@ -19,7 +19,7 @@ We would like to express our sincere gratitude to the following individuals:
 - **Dhiraj Amin**  
 - **Sharvari Govilkar**  
 
-## 🧪 **Lab Faculty**  
+## 💻 **Lab Faculty**  
 - **Dhiraj Amin**  
 - **Neha Ashok**  
 - **Shubhangi Chavan**  
