@@ -1,0 +1,214 @@
+@import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
+
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+main {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f8f9fa;
+}
+
+.textTract {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Header styles */
+.title,
+.scoreTitle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #f0f4f8;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.title img,
+.scoreTitle img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.title h1,
+.scoreTitle h1 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Extracted text section */
+.extractedText {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  line-height: 1.6;
+  color: #4a5568;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.95rem;
+}
+
+/* Score section */
+.scoreCon {
+  padding-bottom: 2rem;
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.score-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.emoji {
+  font-size: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.score-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+}
+
+/* Suggestions section */
+.suggestions-container {
+  padding: 0 1.5rem;
+}
+
+.suggestions-container h2 {
+  font-size: 1.25rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 20vh;
+  overflow-y: scroll;
+}
+
+.suggestion-item {
+  background-color: #f8f9fa;
+  border-left: 3px solid #0f3460;
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+}
+
+.suggestion-item:hover {
+  transform: translateX(5px);
+  background-color: #f0f2f5;
+}
+
+.suggestion-category {
+  display: block;
+  font-weight: bold;
+  color: #0f3460;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.suggestion-content {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #333;
+}
+
+.no-suggestions {
+  text-align: center;
+  color: #6b7280;
+  padding: 2rem 0;
+  font-style: italic;
+}
+
+/* Loader */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.loader:after {
+  content: "";
+  width: 50px;
+  height: 50px;
+  border: 6px solid #e2e8f0;
+  border-top: 6px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .suggestions-list {
+    grid-template-columns: 1fr;
+  }
+
+  .score-display {
+    flex-direction: column;
+  }
+
+  .title h1,
+  .scoreTitle h1 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Keep the existing suggestionCon class for compatibility */
+.suggestionCon {
+  height: 20vh;
+  overflow-y: scroll;
+}
+
